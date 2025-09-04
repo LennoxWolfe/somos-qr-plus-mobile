@@ -16,7 +16,7 @@ We take security seriously in the SOMOS QR+ mobile application. If you discover 
 ### How to Report
 
 1. **DO NOT** create a public GitHub issue for security vulnerabilities
-2. Email security concerns to: [your-security-email@company.com]
+2. Email security concerns to: jcedano@somosipa.com
 3. Include the following information:
    - Description of the vulnerability
    - Steps to reproduce
@@ -56,4 +56,4 @@ When contributing to this project:
 
 ## Contact
 
-For general security questions or concerns, please contact: [your-contact-email@company.com]
+For general security questions or concerns, please contact: jcedano@somosipa.com
