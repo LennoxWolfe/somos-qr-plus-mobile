@@ -237,24 +237,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildPageHeader() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        double fontSize;
+        // Responsive font sizing
+        double fontSize = 32; // Default desktop
         if (constraints.maxWidth < 600) {
           fontSize = 24; // Mobile
         } else if (constraints.maxWidth < 900) {
           fontSize = 28; // Tablet
-        } else {
-          fontSize = 32; // Desktop
         }
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Reports',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
+                color: const Color(0xFF333333),
               ),
             ),
           ],
@@ -1502,22 +1501,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Responsive sizing based on available width
-        double chartSize, centerSpaceRadius, fontSize, legendSpacing;
+        double chartSize, centerSpaceRadius, fontSize;
         if (constraints.maxWidth < 300) {
           chartSize = 65;
           centerSpaceRadius = 20;
           fontSize = 12;
-          legendSpacing = 12;
         } else if (constraints.maxWidth < 500) {
           chartSize = 80;
           centerSpaceRadius = 25;
           fontSize = 14;
-          legendSpacing = 14;
         } else {
           chartSize = 95;
           centerSpaceRadius = 30;
           fontSize = 16;
-          legendSpacing = 16;
         }
         
         return Center(
