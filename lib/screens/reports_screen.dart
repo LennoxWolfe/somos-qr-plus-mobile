@@ -7,6 +7,8 @@ import '../widgets/appt_table_widget.dart';
 import '../widgets/mwov_table_widget.dart';
 import '../widgets/siip_table_widget.dart';
 import '../widgets/staff_login_table_widget.dart';
+import '../widgets/app_header_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -109,7 +111,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
           // Main Content
           Column(
             children: [
-              _buildNavigationHeader(),
+              AppHeaderWidget(
+                onMenuPressed: () {
+                  setState(() {
+                    _isDrawerOpen = true;
+                  });
+                },
+                onProfileAction: (action) {
+                  _handleProfileAction(action);
+                },
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(), // Smooth scrolling for mobile
@@ -129,17 +140,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
           
 
           
-          // Drawer Overlay (transparent)
-          if (_isDrawerOpen)
-            GestureDetector(
-              onTap: () => setState(() => _isDrawerOpen = false),
-              child: Container(
-                color: Colors.transparent,
-              ),
-            ),
-          
           // Navigation Drawer
-          if (_isDrawerOpen) _buildNavigationDrawer(),
+          AppDrawerWidget(
+            isOpen: _isDrawerOpen,
+            onClose: () {
+              setState(() {
+                _isDrawerOpen = false;
+              });
+            },
+            onNavigation: (route) {
+              setState(() {
+                _isDrawerOpen = false;
+              });
+              _handleNavigation(route);
+            },
+            activeRoute: 'reports',
+          ),
           
           // Logout Dialog
           if (_showLogoutDialog) _buildLogoutDialog(),
@@ -148,416 +164,53 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildNavigationHeader() {
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // Hamburger Menu
-            IconButton(
-              onPressed: () => setState(() => _isDrawerOpen = true),
-              icon: const Icon(Icons.menu, size: 24, color: Color(0xFF333333)),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            
-            const SizedBox(width: 8),
-            
-            // Logo
-            const Expanded(
-              child: Text(
-                'SOMOS QR+',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF333333),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            
-            // Provider Dropdown
-            _buildProviderDropdown(),
-            
-            const SizedBox(width: 8),
-            
-            // Profile
-            _buildProfileButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProviderDropdown() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _selectedProvider,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down, size: 14, color: Color(0xFF666666)),
-          ],
-        ),
-      ),
-      itemBuilder: (context) => _providers.map((provider) {
-        return PopupMenuItem<String>(
-          value: provider,
-          child: Text(provider),
-        );
-      }).toList(),
-      onSelected: (value) {
+  void _handleNavigation(String route) {
+    switch (route) {
+      case 'dashboard':
+        context.go('/dashboard');
+        break;
+      case 'quality':
+        context.go('/quality-scorecards');
+        break;
+      case 'schedule':
+        // TODO: Navigate to schedule page
+        break;
+      case 'patients':
+        context.go('/patients');
+        break;
+      case 'reports':
+        // Already on reports page
+        break;
+      case 'resources':
+        // TODO: Navigate to resources page
+        break;
+      case 'settings':
+        context.go('/settings');
+        break;
+      case 'logout':
         setState(() {
-          _selectedProvider = value;
+          _showLogoutDialog = true;
         });
-      },
-    );
-  }
-
-  Widget _buildProfileButton() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Center(
-          child: Text(
-            'JC',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          enabled: false,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'JC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Joel Cedano',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                        Text(
-                          'jcedano@somosipa.com',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 32),
-              _buildProfileOption('Language', '🇺🇸 English'),
-              _buildProfileOption('Invitations', ''),
-              _buildProfileOption('Log Out', ''),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileOption(String label, String value) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
-            ),
-          ),
-          if (value.isNotEmpty)
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF666666),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavigationDrawer() {
-    return Positioned(
-      left: 0,
-      top: 0,
-      bottom: 0,
-      child: Container(
-        width: 280,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(2, 0),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Drawer Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1976D2),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(color: const Color(0xFF4CAF50), width: 3),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'JC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'SOMOS QR',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w100,
-                          letterSpacing: -1.2,
-                        ),
-                      ),
-                      Text(
-                        '+',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w100,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Drawer Items
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                                     _buildDrawerItem('Dashboard', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     context.go('/dashboard');
-                   }),
-                   _buildDrawerItem('Quality Score Cards', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     context.go('/quality-scorecards');
-                   }),
-                   _buildDrawerItem('My Schedule', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     // TODO: Navigate to schedule page
-                   }),
-                                     _buildDrawerItem('My Patients', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/patients');
-                  }),
-                   _buildDrawerItem('Reports', true, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                   }),
-                   _buildDrawerItem('Resources', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     // TODO: Navigate to resources page
-                   }),
-                   const Divider(height: 32),
-                   _buildDrawerItem('Settings', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     context.go('/settings');
-                   }),
-                   _buildDrawerItem('Log Out', false, onTap: () {
-                     setState(() => _isDrawerOpen = false);
-                     _showLogoutDialog = true;
-                   }),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getIconForItem(String text) {
-    switch (text) {
-      case 'Dashboard':
-        return Icons.dashboard;
-      case 'Quality Score Cards':
-        return Icons.assessment;
-      case 'My Schedule':
-        return Icons.schedule;
-      case 'My Patients':
-        return Icons.people;
-      case 'Reports':
-        return Icons.bar_chart;
-      case 'Resources':
-        return Icons.folder;
-      case 'Settings':
-        return Icons.settings;
-      case 'Log Out':
-        return Icons.logout;
-      default:
-        return Icons.help;
+        break;
     }
   }
 
-  Widget _buildDrawerItem(String text, bool isActive, {VoidCallback? onTap}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFE3F2FD) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(
-            color: isActive ? const Color(0xFF1976D2) : Colors.transparent,
-            width: 3,
-          ),
-        ),
-      ),
-      child: ListTile(
-        leading: Icon(
-          _getIconForItem(text),
-          color: isActive ? const Color(0xFF1976D2) : const Color(0xFF333333),
-          size: 20,
-        ),
-        title: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
-            color: isActive ? const Color(0xFF1976D2) : const Color(0xFF333333),
-          ),
-        ),
-        onTap: onTap ?? () {
-          // Handle navigation
-          setState(() => _isDrawerOpen = false);
-        },
-      ),
-    );
+  void _handleProfileAction(String action) {
+    switch (action) {
+      case 'language':
+        // Handle language change
+        break;
+      case 'invitations':
+        // Handle invitations
+        break;
+      case 'logout':
+        setState(() {
+          _showLogoutDialog = true;
+        });
+        break;
+    }
   }
+
 
   Widget _buildPageHeader() {
     return LayoutBuilder(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/patient_profile_modal.dart';
 import '../widgets/patient_filter_modal.dart';
+import '../widgets/app_header_widget.dart';
+import '../widgets/app_drawer_widget.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -114,199 +116,74 @@ class _PatientsScreenState extends State<PatientsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
+              AppHeaderWidget(
+                onMenuPressed: () {
+                  setState(() {
+                    _isDrawerOpen = true;
+                  });
+                },
+                onProfileAction: (action) {
+                  _handleProfileAction(action);
+                },
+              ),
+              
+              // Provider Dropdown (moved from header)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    // Top Row: Menu, Logo, Notifications, Profile
-                    Row(
-                      children: [
-                        // Menu Button
-                        IconButton(
-                          onPressed: () => setState(() => _isDrawerOpen = true),
-                          icon: const Icon(Icons.menu, size: 22),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.grey.shade50,
-                            padding: const EdgeInsets.all(6),
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 8),
-                        
-                        // Logo/Title
-                        Expanded(
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'SOMOS QR',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.grey.shade800,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                                Text(
-                                  '+',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w300,
-                                    color: const Color(0xFF1976D2),
-                                  ),
-                                ),
-                              ],
+                    Expanded(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedProvider,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
                             ),
-                          ),
-                        ),
-                        
-                        // Notifications
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Stack(
-                            children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.notifications_outlined,
-                                  color: Colors.grey.shade700,
-                                  size: 18,
-                                ),
-                                style: IconButton.styleFrom(
-                                  padding: const EdgeInsets.all(4),
-                                ),
-                              ),
-                              Positioned(
-                                right: 3,
-                                top: 3,
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Text(
-                                    '3',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 6),
-                        
-                        // Profile Avatar
-                        GestureDetector(
-                          onTap: () {},
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF667EEA).withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'JC',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
                             ),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            hintText: 'Select Provider',
                           ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 12),
-                    
-                    // Bottom Row: Provider Dropdown
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 300),
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedProvider,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                                hintText: 'Select Provider',
-                              ),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              items: [
-                                'All',
-                                'Delmont Medical, PC',
-                                'Provider 2',
-                                'Provider 3',
-                                'Provider 4',
-                              ].map((provider) => DropdownMenuItem(
-                                value: provider,
-                                child: Text(
-                                  provider,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              )).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() => _selectedProvider = value);
-                                }
-                              },
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          items: [
+                            'All',
+                            'Delmont Medical, PC',
+                            'Provider 2',
+                            'Provider 3',
+                            'Provider 4',
+                          ].map((provider) => DropdownMenuItem(
+                            value: provider,
+                            child: Text(
+                              provider,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 14),
                             ),
-                          ),
+                          )).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedProvider = value);
+                            }
+                          },
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -541,176 +418,69 @@ class _PatientsScreenState extends State<PatientsScreen> {
             ),
           
           // Navigation Drawer
-          if (_isDrawerOpen) _buildNavigationDrawer(),
+          AppDrawerWidget(
+            isOpen: _isDrawerOpen,
+            onClose: () {
+              setState(() {
+                _isDrawerOpen = false;
+              });
+            },
+            onNavigation: (route) {
+              setState(() {
+                _isDrawerOpen = false;
+              });
+              _handleNavigation(route);
+            },
+            activeRoute: 'patients',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildNavigationDrawer() {
-    return Positioned(
-      left: 0,
-      top: 0,
-      bottom: 0,
-      child: Container(
-        width: 280,
-        decoration: BoxDecoration(
-          color: Colors.white,
-                      boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(2, 0),
-              ),
-            ],
-        ),
-        child: Column(
-          children: [
-            // Drawer Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1976D2),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(color: const Color(0xFF4CAF50), width: 3),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'JC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'SOMOS QR',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w100,
-                          letterSpacing: -1.2,
-                        ),
-                      ),
-                      Text(
-                        '+',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w100,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Drawer Items
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  _buildDrawerItem('Dashboard', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/dashboard');
-                  }),
-                  _buildDrawerItem('Quality Score Cards', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/quality-scorecards');
-                  }),
-                  _buildDrawerItem('My Schedule', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    // TODO: Navigate to schedule page
-                  }),
-                  _buildDrawerItem('My Patients', true, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/patients');
-                  }),
-                  _buildDrawerItem('Reports', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/reports');
-                  }),
-                  _buildDrawerItem('Resources', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    // TODO: Navigate to resources page
-                  }),
-                  const Divider(height: 1, thickness: 1),
-                  _buildDrawerItem('Settings', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/settings');
-                  }),
-                  _buildDrawerItem('Log Out', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    // TODO: Implement logout
-                  }),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title, bool isActive, {required VoidCallback onTap}) {
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isActive ? const Color(0xFF1976D2) : const Color(0xFF333333),
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-        ),
-      ),
-      tileColor: isActive ? const Color(0xFFE3F2FD) : null,
-      leading: Icon(
-        _getIconForTitle(title),
-        color: isActive ? const Color(0xFF1976D2) : const Color(0xFF666666),
-      ),
-      onTap: onTap,
-    );
-  }
-
-  IconData _getIconForTitle(String title) {
-    switch (title) {
-      case 'Dashboard':
-        return Icons.dashboard;
-      case 'Quality Score Cards':
-        return Icons.bar_chart;
-      case 'My Schedule':
-        return Icons.schedule;
-      case 'My Patients':
-        return Icons.people;
-      case 'Reports':
-        return Icons.assessment;
-      case 'Resources':
-        return Icons.folder;
-      case 'Settings':
-        return Icons.settings;
-      case 'Log Out':
-        return Icons.logout;
-      default:
-        return Icons.circle;
+  void _handleNavigation(String route) {
+    switch (route) {
+      case 'dashboard':
+        context.go('/dashboard');
+        break;
+      case 'quality':
+        context.go('/quality-scorecards');
+        break;
+      case 'schedule':
+        // TODO: Navigate to schedule page
+        break;
+      case 'patients':
+        // Already on patients page
+        break;
+      case 'reports':
+        context.go('/reports');
+        break;
+      case 'resources':
+        // TODO: Navigate to resources page
+        break;
+      case 'settings':
+        context.go('/settings');
+        break;
+      case 'logout':
+        // Handle logout logic
+        break;
     }
   }
+
+  void _handleProfileAction(String action) {
+    switch (action) {
+      case 'language':
+        // Handle language change
+        break;
+      case 'invitations':
+        // Handle invitations
+        break;
+      case 'logout':
+        // Handle logout logic
+        break;
+    }
+  }
+
 }
 
 
