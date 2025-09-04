@@ -40,6 +40,9 @@ yarn-debug.log*
 yarn-error.log*
 *.node
 
+# HTML/JS/CSS version (keep locally only)
+html-version/
+
 # Symbolication related
 app.*.symbols
 
