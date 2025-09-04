@@ -125,6 +125,88 @@ class _APPTTableWidgetState extends State<APPTTableWidget> {
         phone: '2125556666',
         address: '741 Atlantic Ave, Brooklyn, NY',
       ),
+      // Additional sample data for pagination testing
+      APPTPatient(
+        name: 'Elena Vasquez',
+        mco: 'Healthfirst',
+        dob: '03-28-1976',
+        lastDos: '02-10-2024',
+        missedDate: '03-15-2024',
+        phone: '6463334444',
+        address: '852 Madison St, Queens, NY',
+      ),
+      APPTPatient(
+        name: 'Carlos Mendez',
+        mco: 'Anthem',
+        dob: '06-15-1983',
+        lastDos: '01-30-2024',
+        missedDate: '03-05-2024',
+        phone: '7189998888',
+        address: '963 Lexington Ave, Manhattan, NY',
+      ),
+      APPTPatient(
+        name: 'Sofia Ramirez',
+        mco: 'Molina',
+        dob: '09-17-1981',
+        lastDos: '02-15-2024',
+        missedDate: '03-20-2024',
+        phone: '6464445555',
+        address: '174 3rd Ave, Brooklyn, NY',
+      ),
+      APPTPatient(
+        name: 'Diego Herrera',
+        mco: 'Emblem',
+        dob: '01-22-1974',
+        lastDos: '01-25-2024',
+        missedDate: '02-28-2024',
+        phone: '6468889999',
+        address: '285 4th St, Bronx, NY',
+      ),
+      APPTPatient(
+        name: 'Valentina Cruz',
+        mco: 'Healthfirst',
+        dob: '07-14-1987',
+        lastDos: '02-20-2024',
+        missedDate: '03-25-2024',
+        phone: '9171112222',
+        address: '396 5th St, Staten Island, NY',
+      ),
+      APPTPatient(
+        name: 'Alejandro Morales',
+        mco: 'Anthem',
+        dob: '04-09-1972',
+        lastDos: '01-18-2024',
+        missedDate: '02-22-2024',
+        phone: '7186667777',
+        address: '407 6th Ave, Queens, NY',
+      ),
+      APPTPatient(
+        name: 'Camila Jimenez',
+        mco: 'Molina',
+        dob: '12-03-1985',
+        lastDos: '02-25-2024',
+        missedDate: '03-30-2024',
+        phone: '6465556666',
+        address: '518 7th St, Brooklyn, NY',
+      ),
+      APPTPatient(
+        name: 'Sebastian Ruiz',
+        mco: 'Emblem',
+        dob: '05-26-1978',
+        lastDos: '01-12-2024',
+        missedDate: '02-18-2024',
+        phone: '9179990000',
+        address: '629 8th Ave, Manhattan, NY',
+      ),
+      APPTPatient(
+        name: 'Gabriela Torres',
+        mco: 'Healthfirst',
+        dob: '08-19-1980',
+        lastDos: '02-08-2024',
+        missedDate: '03-12-2024',
+        phone: '7187778888',
+        address: '730 9th St, Bronx, NY',
+      ),
     ];
     _filteredPatients = List.from(_patients);
   }
@@ -398,10 +480,8 @@ class _APPTTableWidgetState extends State<APPTTableWidget> {
                     ),
                   ),
                   // Pagination Controls
-                  if (_totalPages > 1) ...[
-                    const SizedBox(height: 16),
-                    _buildPaginationControls(),
-                  ],
+                  const SizedBox(height: 16),
+                  _buildPaginationControls(),
                 ],
               ),
             ),
@@ -432,52 +512,157 @@ class _APPTTableWidgetState extends State<APPTTableWidget> {
   }
 
   Widget _buildPaginationControls() {
+    final startIndex = (_currentPage - 1) * _rowsPerPage + 1;
+    final endIndex = (_currentPage * _rowsPerPage).clamp(0, _filteredPatients.length);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // If width is too small, stack vertically
+          if (constraints.maxWidth < 600) {
+            return Column(
+              children: [
+                // Rows per page selector
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Rows per page:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 6),
+                    DropdownButton<int>(
+                      value: _rowsPerPage,
+                      items: [10, 20, 50, 100].map((value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value', style: const TextStyle(fontSize: 11)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _rowsPerPage = value;
+                            _currentPage = 1;
+                          });
+                        }
+                      },
+                      underline: Container(),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Page info and navigation
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Showing $startIndex-$endIndex of ${_filteredPatients.length}',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildCompactNavigation(),
+                  ],
+                ),
+              ],
+            );
+          } else {
+            // Horizontal layout for wider screens
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Rows per page selector
+                Row(
+                  children: [
+                    const Text(
+                      'Rows per page:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 6),
+                    DropdownButton<int>(
+                      value: _rowsPerPage,
+                      items: [10, 20, 50, 100].map((value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value', style: const TextStyle(fontSize: 11)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _rowsPerPage = value;
+                            _currentPage = 1;
+                          });
+                        }
+                      },
+                      underline: Container(),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
+                
+                // Page info and navigation
+                Row(
+                  children: [
+                    Text(
+                      'Showing $startIndex-$endIndex of ${_filteredPatients.length}',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildCompactNavigation(),
+                  ],
+                ),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildCompactNavigation() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Previous button
         IconButton(
           onPressed: _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
           icon: const Icon(Icons.chevron_left),
-          iconSize: 20,
+          iconSize: 18,
+          padding: const EdgeInsets.all(2),
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
         ),
         
-        // Page numbers
-        ...List.generate(_totalPages, (index) {
-          final pageNumber = index + 1;
-          final isCurrentPage = pageNumber == _currentPage;
-          
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: InkWell(
-              onTap: () => _goToPage(pageNumber),
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isCurrentPage ? const Color(0xFF1976D2) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isCurrentPage ? const Color(0xFF1976D2) : Colors.grey.shade300,
-                  ),
-                ),
-                child: Text(
-                  '$pageNumber',
-                  style: TextStyle(
-                    color: isCurrentPage ? Colors.white : Colors.grey.shade700,
-                    fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              ),
+        // Current page number only (to save space)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1976D2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '$_currentPage',
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        }),
+          ),
+        ),
         
         // Next button
         IconButton(
-          onPressed: _currentPage < _totalPages ? () => _goToPage(_currentPage - 1) : null,
+          onPressed: _currentPage < _totalPages ? () => _goToPage(_currentPage + 1) : null,
           icon: const Icon(Icons.chevron_right),
-          iconSize: 20,
+          iconSize: 18,
+          padding: const EdgeInsets.all(2),
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
         ),
       ],
     );

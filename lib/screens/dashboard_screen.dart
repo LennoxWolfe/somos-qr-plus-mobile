@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../widgets/app_header_widget.dart';
+import '../widgets/app_drawer_widget.dart';
+import '../widgets/provider_dropdown_widget.dart';
+import '../core/constants/providers.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -12,64 +16,10 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isDrawerOpen = false;
-  bool _isNotificationsOpen = false;
-  bool _isProfileOpen = false;
   bool _isScheduleExpanded = true;
-  String _selectedProvider = 'All';
-  String _selectedIncentiveProvider = 'all';
-  int _unreadNotifications = 3;
+  String _selectedIncentiveProvider = 'All';
   bool _showLogoutDialog = false;
 
-  final List<String> _providers = [
-    'All',
-    'Delmont Medical, PC',
-    'Provider 2',
-    'Provider 3',
-    'Provider 4',
-  ];
-
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'id': '1',
-      'title': 'New Quality Scorecard Available',
-      'message': 'Your Q2 2025 quality scorecard is ready for review.',
-      'time': '2 hours ago',
-      'icon': '📋',
-      'unread': true,
-    },
-    {
-      'id': '2',
-      'title': 'Patient Appointment Reminder',
-      'message': '5 patients have appointments scheduled for tomorrow.',
-      'time': '4 hours ago',
-      'icon': '👥',
-      'unread': true,
-    },
-    {
-      'id': '3',
-      'title': 'Monthly Report Generated',
-      'message': 'Your July 2025 performance report has been generated.',
-      'time': '1 day ago',
-      'icon': '📊',
-      'unread': true,
-    },
-    {
-      'id': '4',
-      'title': 'Document Upload Complete',
-      'message': 'Patient records have been successfully uploaded.',
-      'time': '2 days ago',
-      'icon': '✅',
-      'unread': false,
-    },
-    {
-      'id': '5',
-      'title': 'System Maintenance',
-      'message': 'Scheduled maintenance completed successfully.',
-      'time': '3 days ago',
-      'icon': '🔔',
-      'unread': false,
-    },
-  ];
 
   final List<Map<String, dynamic>> _appointments = [
     {
@@ -108,8 +58,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Main Content
           Column(
             children: [
-              _buildNavigationHeader(),
-                              Expanded(
+                                            AppHeaderWidget(
+                onMenuPressed: () {
+                  setState(() {
+                    _isDrawerOpen = true;
+                  });
+                },
+                onProfileAction: (action) {
+                  _handleProfileAction(action);
+                },
+              ),
+              
+              // Provider Dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                                                                    child: ProviderDropdownWidget(
+                        selectedProvider: _selectedIncentiveProvider,
+                        providers: AppProviders.providers,
+                        onProviderChanged: (provider) {
+                          setState(() {
+                            _selectedIncentiveProvider = provider;
+                          });
+                          _showSuccessMessage('Showing data for ${provider == 'All' ? 'All providers' : provider}');
+                        },
+                        maxWidth: 300,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                   child: Column(
@@ -131,17 +117,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           
-          // Drawer Overlay
-          if (_isDrawerOpen)
-            GestureDetector(
-              onTap: () => setState(() => _isDrawerOpen = false),
-              child: Container(
-                color: Colors.black.withOpacity(0.3),
-              ),
+                      // Navigation Drawer
+            AppDrawerWidget(
+              isOpen: _isDrawerOpen,
+              onClose: () {
+                setState(() {
+                  _isDrawerOpen = false;
+                });
+              },
+              onNavigation: (route) {
+                setState(() {
+                  _isDrawerOpen = false;
+                });
+                _handleNavigation(route);
+              },
+              activeRoute: 'dashboard',
             ),
-          
-          // Navigation Drawer
-          if (_isDrawerOpen) _buildNavigationDrawer(),
           
           // Logout Dialog
           if (_showLogoutDialog) _buildLogoutDialog(),
@@ -150,569 +141,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNavigationHeader() {
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // Hamburger Menu
-            IconButton(
-              onPressed: () => setState(() => _isDrawerOpen = true),
-              icon: const Icon(Icons.menu, size: 24, color: Color(0xFF333333)),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            
-            const SizedBox(width: 8),
-            
-            // Logo
-            const Expanded(
-              child: Text(
-                'SOMOS QR+',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF333333),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            
-            // Provider Dropdown
-            _buildProviderDropdown(),
-            
-            const SizedBox(width: 8),
-            
-            // Notifications
-            _buildNotificationsButton(),
-            
-            const SizedBox(width: 8),
-            
-            // Profile
-            _buildProfileButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProviderDropdown() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _selectedProvider,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down, size: 14, color: Color(0xFF666666)),
-          ],
-        ),
-      ),
-      itemBuilder: (context) => _providers.map((provider) {
-        return PopupMenuItem<String>(
-          value: provider,
-          child: Text(provider),
-        );
-      }).toList(),
-      onSelected: (value) {
+  void _handleNavigation(String route) {
+    switch (route) {
+      case 'dashboard':
+        // Already on dashboard page
+        break;
+      case 'quality':
+        context.go('/quality-scorecards');
+        break;
+      case 'schedule':
+        // TODO: Navigate to schedule page
+        break;
+      case 'patients':
+        context.go('/patients');
+        break;
+      case 'reports':
+        context.go('/reports');
+        break;
+      case 'resources':
+        // TODO: Navigate to resources page
+        break;
+      case 'settings':
+        context.go('/settings');
+        break;
+      case 'logout':
         setState(() {
-          _selectedProvider = value;
+          _showLogoutDialog = true;
         });
-        _showSuccessMessage('Dashboard updated for $value');
-      },
-    );
-  }
-
-  Widget _buildNotificationsButton() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      child: Stack(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.notifications_outlined, color: Color(0xFF333333)),
-          ),
-          if (_unreadNotifications > 0)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE74C3C),
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Text(
-                  _unreadNotifications.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          enabled: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Notifications',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _unreadNotifications = 0;
-                        for (var notification in _notifications) {
-                          notification['unread'] = false;
-                        }
-                      });
-                      _showSuccessMessage('All notifications marked as read');
-                    },
-                    child: const Text(
-                      'Mark all read',
-                      style: TextStyle(color: Color(0xFF667EEA), fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ..._notifications.map((notification) => _buildNotificationItem(notification)),
-              const SizedBox(height: 8),
-              const Center(
-                child: Text(
-                  'View all notifications',
-                  style: TextStyle(color: Color(0xFF667EEA), fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotificationItem(Map<String, dynamic> notification) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: notification['unread'] ? const Color(0xFFF0F7FF) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: notification['unread']
-            ? const Border(left: BorderSide(color: Color(0xFF667EEA), width: 3))
-            : null,
-      ),
-      child: Row(
-        children: [
-          Text(notification['icon'], style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  notification['title'],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  notification['message'],
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF666666),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  notification['time'],
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF999999),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _notifications.removeWhere((n) => n['id'] == notification['id']);
-                if (notification['unread']) {
-                  _unreadNotifications--;
-                }
-              });
-              _showSuccessMessage('Notification removed');
-            },
-            icon: const Icon(Icons.close, size: 16, color: Color(0xFF999999)),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileButton() {
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Center(
-          child: Text(
-            'JC',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          enabled: false,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'JC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Joel Cedano',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                        Text(
-                          'jcedano@somosipa.com',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 32),
-              _buildProfileOption('Language', '🇺🇸 English'),
-              _buildProfileOption('Invitations', ''),
-              _buildProfileOption('Log Out', ''),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileOption(String label, String value) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
-            ),
-          ),
-          if (value.isNotEmpty)
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF666666),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavigationDrawer() {
-    return Positioned(
-      left: 0,
-      top: 0,
-      bottom: 0,
-      child: Container(
-        width: 280,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(2, 0),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Drawer Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1976D2),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(color: const Color(0xFF4CAF50), width: 3),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'JC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'SOMOS QR',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w100,
-                          letterSpacing: -1.2,
-                        ),
-                      ),
-                      Text(
-                        '+',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w100,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Drawer Items
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  _buildDrawerItem('Dashboard', true, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                  }),
-                  _buildDrawerItem('Quality Score Cards', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/quality-scorecards');
-                  }),
-                  _buildDrawerItem('My Schedule', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    // TODO: Navigate to schedule page
-                  }),
-                  _buildDrawerItem('My Patients', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/patients');
-                  }),
-                  _buildDrawerItem('Reports', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/reports');
-                  }),
-                  _buildDrawerItem('Resources', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    // TODO: Navigate to resources page
-                  }),
-                  const Divider(height: 32),
-                  _buildDrawerItem('Settings', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    context.go('/settings');
-                  }),
-                  _buildDrawerItem('Log Out', false, onTap: () {
-                    setState(() => _isDrawerOpen = false);
-                    _showLogoutDialog = true;
-                  }),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getIconForItem(String text) {
-    switch (text) {
-      case 'Dashboard':
-        return Icons.dashboard;
-      case 'Quality Score Cards':
-        return Icons.assessment;
-      case 'My Schedule':
-        return Icons.schedule;
-      case 'My Patients':
-        return Icons.people;
-      case 'Reports':
-        return Icons.bar_chart;
-      case 'Resources':
-        return Icons.folder;
-      case 'Settings':
-        return Icons.settings;
-      case 'Log Out':
-        return Icons.logout;
-      default:
-        return Icons.help;
+        break;
     }
   }
 
-  Widget _buildDrawerItem(String text, bool isActive, {VoidCallback? onTap}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFE3F2FD) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(
-            color: isActive ? const Color(0xFF1976D2) : Colors.transparent,
-            width: 3,
-          ),
-        ),
-      ),
-      child: ListTile(
-        leading: Icon(
-          _getIconForItem(text),
-          color: isActive ? const Color(0xFF1976D2) : const Color(0xFF333333),
-          size: 20,
-        ),
-        title: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
-            color: isActive ? const Color(0xFF1976D2) : const Color(0xFF333333),
-          ),
-        ),
-        onTap: onTap ?? () {
-          // Handle navigation
-          setState(() => _isDrawerOpen = false);
-        },
-      ),
-    );
+  void _handleProfileAction(String action) {
+    switch (action) {
+      case 'language':
+        // Handle language change
+        break;
+      case 'invitations':
+        // Handle invitations
+        break;
+      case 'logout':
+        setState(() {
+          _showLogoutDialog = true;
+        });
+        break;
+    }
   }
+
+
+
+
+
+
+
+
+
 
   Widget _buildWelcomeSection() {
     return const Column(
@@ -1003,29 +486,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 20),
           
-          // Provider Toggles
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 600;
-                return Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: [
-                    _buildProviderToggle('all', 'All'),
-                    _buildProviderToggle('emblem', 'Emblem'),
-                    _buildProviderToggle('anthem', 'Anthem'),
-                  ],
-                );
-              },
-            ),
-          ),
           const SizedBox(height: 20),
           
           // Stats
@@ -1269,32 +729,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildProviderToggle(String provider, String label) {
-    final isActive = _selectedIncentiveProvider == provider;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedIncentiveProvider = provider;
-        });
-        _showSuccessMessage('Showing data for ${provider == 'all' ? 'All providers' : label}');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF1976D2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isActive ? Colors.white : const Color(0xFF666666),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildScheduleCard() {
     return Container(

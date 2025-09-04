@@ -4,6 +4,8 @@ import '../widgets/patient_profile_modal.dart';
 import '../widgets/patient_filter_modal.dart';
 import '../widgets/app_header_widget.dart';
 import '../widgets/app_drawer_widget.dart';
+import '../widgets/provider_dropdown_widget.dart';
+import '../core/constants/providers.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -23,6 +25,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
   String _dobFilter = '';
   int _currentPage = 1;
   int _rowsPerPage = 20;
+
 
   @override
   void initState() {
@@ -127,7 +130,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 },
               ),
               
-              // Provider Dropdown (moved from header)
+              // Provider Dropdown
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
@@ -137,52 +140,13 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedProvider,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade50,
-                            hintText: 'Select Provider',
-                          ),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          items: [
-                            'All',
-                            'Delmont Medical, PC',
-                            'Provider 2',
-                            'Provider 3',
-                            'Provider 4',
-                          ].map((provider) => DropdownMenuItem(
-                            value: provider,
-                            child: Text(
-                              provider,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          )).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _selectedProvider = value);
-                            }
-                          },
-                        ),
+                      child: ProviderDropdownWidget(
+                        selectedProvider: _selectedProvider,
+                        providers: AppProviders.providers,
+                        onProviderChanged: (provider) {
+                          setState(() => _selectedProvider = provider);
+                        },
+                        maxWidth: 300,
                       ),
                     ),
                   ],
@@ -195,22 +159,12 @@ class _PatientsScreenState extends State<PatientsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'My Patients',
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Manage and view your patient information',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF333333),
                       ),
                     ),
                   ],

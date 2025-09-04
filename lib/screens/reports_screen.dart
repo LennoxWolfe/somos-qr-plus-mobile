@@ -9,6 +9,8 @@ import '../widgets/siip_table_widget.dart';
 import '../widgets/staff_login_table_widget.dart';
 import '../widgets/app_header_widget.dart';
 import '../widgets/app_drawer_widget.dart';
+import '../widgets/provider_dropdown_widget.dart';
+import '../core/constants/providers.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -24,13 +26,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
 
 
-  final List<String> _providers = [
-    'All',
-    'Delmont Medical, PC',
-    'Provider 2',
-    'Provider 3',
-    'Provider 4',
-  ];
 
   // KPI Card Data
   final Map<String, Map<String, dynamic>> _kpiData = {
@@ -121,6 +116,33 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   _handleProfileAction(action);
                 },
               ),
+              
+              // Provider Dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ProviderDropdownWidget(
+                        selectedProvider: _selectedProvider,
+                        providers: AppProviders.providers,
+                        onProviderChanged: (provider) {
+                          setState(() {
+                            _selectedProvider = provider;
+                          });
+                          _showSuccessMessage('Reports updated for $provider');
+                        },
+                        maxWidth: 300,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(), // Smooth scrolling for mobile
@@ -227,12 +249,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Reports',
               style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF333333),
+                fontSize: 32,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
               ),
             ),
           ],
@@ -246,14 +268,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          insetPadding: const EdgeInsets.all(6), // Further reduced padding for more width
+          insetPadding: const EdgeInsets.all(8), // Increased padding to prevent overflow
           child: LayoutBuilder(
             builder: (context, constraints) {
-              double dialogWidth = constraints.maxWidth * 0.99; // Use even more screen width
+              double dialogWidth = constraints.maxWidth * 0.95; // Reduced to prevent overflow
               double dialogHeight = constraints.maxHeight * 0.95; // Use more screen height
               
               if (constraints.maxWidth > 1200) {
-                dialogWidth = 1250; // Slightly increased max width for very large screens
+                dialogWidth = 1200; // Reduced max width to prevent overflow
               }
               
               return Container(
@@ -1952,6 +1974,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSuccessMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF4CAF50),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
       ),
     );
   }

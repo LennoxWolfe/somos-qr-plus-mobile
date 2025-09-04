@@ -125,6 +125,88 @@ class _GICTableWidgetState extends State<GICTableWidget> {
         status: 'Open',
         phone: '9172223333',
       ),
+      // Additional sample data for pagination testing
+      GICPatient(
+        name: 'Carlos Mendez',
+        mco: 'Healthfirst',
+        dob: '06-15-1983',
+        appointment: 'AWV',
+        measure: 'Completed',
+        status: 'Completed',
+        phone: '7189998888',
+      ),
+      GICPatient(
+        name: 'Elena Vasquez',
+        mco: 'Emblem',
+        dob: '03-28-1976',
+        appointment: 'KED',
+        measure: 'Open',
+        status: 'Open',
+        phone: '6463334444',
+      ),
+      GICPatient(
+        name: 'Miguel Torres',
+        mco: 'Molina',
+        dob: '11-05-1969',
+        appointment: 'CBP',
+        measure: 'Completed',
+        status: 'Completed',
+        phone: '9177776666',
+      ),
+      GICPatient(
+        name: 'Sofia Ramirez',
+        mco: 'Anthem',
+        dob: '09-17-1981',
+        appointment: 'PPC',
+        measure: 'Open',
+        status: 'Open',
+        phone: '7184445555',
+      ),
+      GICPatient(
+        name: 'Diego Herrera',
+        mco: 'Healthfirst',
+        dob: '01-22-1974',
+        appointment: 'COL',
+        measure: 'Completed',
+        status: 'Completed',
+        phone: '6468889999',
+      ),
+      GICPatient(
+        name: 'Valentina Cruz',
+        mco: 'Emblem',
+        dob: '07-14-1987',
+        appointment: 'AWV',
+        measure: 'Open',
+        status: 'Open',
+        phone: '9171112222',
+      ),
+      GICPatient(
+        name: 'Alejandro Morales',
+        mco: 'Molina',
+        dob: '04-09-1972',
+        appointment: 'KED',
+        measure: 'Completed',
+        status: 'Completed',
+        phone: '7186667777',
+      ),
+      GICPatient(
+        name: 'Camila Jimenez',
+        mco: 'Anthem',
+        dob: '12-03-1985',
+        appointment: 'CBP',
+        measure: 'Open',
+        status: 'Open',
+        phone: '6465556666',
+      ),
+      GICPatient(
+        name: 'Sebastian Ruiz',
+        mco: 'Healthfirst',
+        dob: '05-26-1978',
+        appointment: 'PPC',
+        measure: 'Completed',
+        status: 'Completed',
+        phone: '9179990000',
+      ),
     ];
     _filteredPatients = List.from(_patients);
   }
@@ -366,14 +448,18 @@ class _GICTableWidgetState extends State<GICTableWidget> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SingleChildScrollView(
-                        child: DataTable(
-                          columnSpacing: padding * 2,
-                          dataTextStyle: TextStyle(fontSize: fontSize),
-                          headingTextStyle: TextStyle(
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF333333),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth - 32, // Account for padding
                           ),
+                          child: DataTable(
+                            columnSpacing: padding * 1.5, // Reduced spacing to prevent overflow
+                            dataTextStyle: TextStyle(fontSize: fontSize),
+                            headingTextStyle: TextStyle(
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF333333),
+                            ),
                           columns: [
                             _buildDataColumn('NAME', 'name', fontSize),
                             _buildDataColumn('MCO', 'mco', fontSize),
@@ -396,15 +482,14 @@ class _GICTableWidgetState extends State<GICTableWidget> {
                               ],
                             );
                           }).toList(),
+                          ),
                         ),
                       ),
                     ),
                   ),
                   // Pagination Controls
-                  if (_totalPages > 1) ...[
-                    const SizedBox(height: 16),
-                    _buildPaginationControls(),
-                  ],
+                  const SizedBox(height: 16),
+                  _buildPaginationControls(),
                 ],
               ),
             ),
@@ -460,56 +545,162 @@ class _GICTableWidgetState extends State<GICTableWidget> {
   }
 
   Widget _buildPaginationControls() {
+    final startIndex = (_currentPage - 1) * _rowsPerPage + 1;
+    final endIndex = (_currentPage * _rowsPerPage).clamp(0, _filteredPatients.length);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // If width is too small, stack vertically
+          if (constraints.maxWidth < 600) {
+            return Column(
+              children: [
+                // Rows per page selector
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Rows per page:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 6),
+                    DropdownButton<int>(
+                      value: _rowsPerPage,
+                      items: [10, 20, 50, 100].map((value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value', style: const TextStyle(fontSize: 11)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _rowsPerPage = value;
+                            _currentPage = 1;
+                          });
+                        }
+                      },
+                      underline: Container(),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Page info and navigation
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Showing $startIndex-$endIndex of ${_filteredPatients.length}',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildCompactNavigation(),
+                  ],
+                ),
+              ],
+            );
+          } else {
+            // Horizontal layout for wider screens
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Rows per page selector
+                Row(
+                  children: [
+                    const Text(
+                      'Rows per page:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 6),
+                    DropdownButton<int>(
+                      value: _rowsPerPage,
+                      items: [10, 20, 50, 100].map((value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value', style: const TextStyle(fontSize: 11)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _rowsPerPage = value;
+                            _currentPage = 1;
+                          });
+                        }
+                      },
+                      underline: Container(),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
+                
+                // Page info and navigation
+                Row(
+                  children: [
+                    Text(
+                      'Showing $startIndex-$endIndex of ${_filteredPatients.length}',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildCompactNavigation(),
+                  ],
+                ),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildCompactNavigation() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Previous button
         IconButton(
           onPressed: _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
           icon: const Icon(Icons.chevron_left),
-          iconSize: 20,
+          iconSize: 18,
+          padding: const EdgeInsets.all(2),
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
         ),
         
-        // Page numbers
-        ...List.generate(_totalPages, (index) {
-          final pageNumber = index + 1;
-          final isCurrentPage = pageNumber == _currentPage;
-          
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: InkWell(
-              onTap: () => _goToPage(pageNumber),
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isCurrentPage ? const Color(0xFF1976D2) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isCurrentPage ? const Color(0xFF1976D2) : Colors.grey.shade300,
-                  ),
-                ),
-                child: Text(
-                  '$pageNumber',
-                  style: TextStyle(
-                    color: isCurrentPage ? Colors.white : Colors.grey.shade700,
-                    fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              ),
+        // Current page number only (to save space)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1976D2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '$_currentPage',
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        }),
+          ),
+        ),
         
         // Next button
         IconButton(
           onPressed: _currentPage < _totalPages ? () => _goToPage(_currentPage + 1) : null,
           icon: const Icon(Icons.chevron_right),
-          iconSize: 20,
+          iconSize: 18,
+          padding: const EdgeInsets.all(2),
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
         ),
       ],
     );
   }
+
 
   Widget _buildFilterDropdown({
     required String? value,

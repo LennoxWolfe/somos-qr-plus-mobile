@@ -64,8 +64,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(
                       'Settings',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF333333),
                       ),
                     ),
