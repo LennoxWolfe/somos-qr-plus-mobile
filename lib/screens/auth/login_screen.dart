@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _secondEmailController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = false;
   bool _isLoading = false;
@@ -57,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen>
     _animationController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _secondEmailController.dispose();
     super.dispose();
   }
 
@@ -208,6 +210,8 @@ class _LoginScreenState extends State<LoginScreen>
           _buildFormOptions(),
           const SizedBox(height: 16),
           _buildLoginButton(),
+          const SizedBox(height: 16),
+          _buildSecondEmailField(),
         ],
       ),
     );
@@ -337,6 +341,66 @@ class _LoginScreenState extends State<LoginScreen>
             }
             if (value.length < 6) {
               return 'Password must be at least 6 characters';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecondEmailField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Enter your email',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[800],
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _secondEmailController,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            hintText: 'Enter your email',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(
+              Icons.email_outlined,
+              color: Colors.grey[600],
+              size: 20,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Email address is required';
+            }
+            if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
+              return 'Please enter a valid email address';
             }
             return null;
           },
