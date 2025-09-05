@@ -404,7 +404,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
         context.go('/quality-scorecards');
         break;
       case 'schedule':
-        // TODO: Navigate to schedule page
+        context.go('/schedule');
         break;
       case 'patients':
         // Already on patients page

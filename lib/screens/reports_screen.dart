@@ -195,7 +195,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         context.go('/quality-scorecards');
         break;
       case 'schedule':
-        // TODO: Navigate to schedule page
+        context.go('/schedule');
         break;
       case 'patients':
         context.go('/patients');
