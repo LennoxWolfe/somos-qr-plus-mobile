@@ -25,6 +25,24 @@ class _GICTableWidgetState extends State<GICTableWidget> {
   String _apptFilter = '';
   String _measureFilter = '';
   String _statusFilter = '';
+  
+  // Export fields
+  final Map<String, bool> _exportFields = {
+    'Name': true,
+    'MCO': true,
+    'Date of Birth': true,
+    'Appointment Date': true,
+    'Measure Code': true,
+    'Status': true,
+    'Phone Number': true,
+    'Measure Description': false,
+    'Line Of Business': false,
+    'Reporting Period': false,
+    'PCP Name': false,
+    'Gender': false,
+    'Member ID': false,
+    'Non User Flag': false,
+  };
 
   @override
   void initState() {
@@ -331,7 +349,7 @@ class _GICTableWidgetState extends State<GICTableWidget> {
                   ),
                   IconButton(
                     onPressed: () {
-                      // Export functionality - silent for now
+                      _showExportDialog();
                     },
                     icon: const Icon(Icons.file_download, size: 20),
                     tooltip: 'Export',
@@ -739,6 +757,44 @@ class _GICTableWidgetState extends State<GICTableWidget> {
     );
   }
 
+  void _showExportDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SelectFieldsDialog(
+          exportFields: _exportFields,
+          onApply: (selectedFields) {
+            setState(() {
+              _exportFields.clear();
+              _exportFields.addAll(selectedFields);
+            });
+            _exportReport();
+          },
+        );
+      },
+    );
+  }
+
+  void _exportReport() {
+    // Get selected fields
+    final selectedFields = _exportFields.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Exporting report with fields: ${selectedFields.join(', ')}'),
+        backgroundColor: const Color(0xFF4CAF50),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+    
+    // TODO: Implement actual export functionality (CSV, PDF, etc.)
+  }
+
   @override
   void dispose() {
     _nameFilterController.dispose();
@@ -766,4 +822,167 @@ class GICPatient {
     required this.status,
     required this.phone,
   });
+}
+
+class SelectFieldsDialog extends StatefulWidget {
+  final Map<String, bool> exportFields;
+  final Function(Map<String, bool>) onApply;
+
+  const SelectFieldsDialog({
+    super.key,
+    required this.exportFields,
+    required this.onApply,
+  });
+
+  @override
+  State<SelectFieldsDialog> createState() => _SelectFieldsDialogState();
+}
+
+class _SelectFieldsDialogState extends State<SelectFieldsDialog> {
+  late Map<String, bool> _selectedFields;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFields = Map.from(widget.exportFields);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Container(
+        width: 400,
+        constraints: const BoxConstraints(maxHeight: 600),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFf8f9fa),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade300),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Select Fields',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, size: 20),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+            
+            // Fields List
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _selectedFields.entries.map((entry) {
+                    return CheckboxListTile(
+                      title: Text(
+                        entry.key,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                      value: entry.value,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _selectedFields[entry.key] = value ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            
+            // Footer Buttons
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF666666),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onApply(_selectedFields);
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'Apply',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
