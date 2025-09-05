@@ -379,6 +379,120 @@ function checkLoginStatus() {
     }
 }
 
+// Initialize create account functionality
+function initializeCreateAccount() {
+    const createAccountForm = document.getElementById('createAccountForm');
+    const signupBtn = document.getElementById('signupBtn');
+    const newEmailInput = document.getElementById('newEmail');
+    const newEmailError = document.getElementById('newEmailError');
+    const newEmailErrorIcon = document.getElementById('newEmailErrorIcon');
+    
+    if (createAccountForm) {
+        createAccountForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleCreateAccount();
+        });
+    }
+    
+    // Email validation on input
+    if (newEmailInput) {
+        newEmailInput.addEventListener('input', function() {
+            validateNewEmail();
+        });
+        
+        newEmailInput.addEventListener('blur', function() {
+            validateNewEmail();
+        });
+    }
+    
+    function validateNewEmail() {
+        const email = newEmailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email === '') {
+            clearNewEmailError();
+            return false;
+        }
+        
+        if (!emailRegex.test(email)) {
+            showNewEmailError('Please enter a valid email address');
+            return false;
+        }
+        
+        clearNewEmailError();
+        return true;
+    }
+    
+    function showNewEmailError(message) {
+        newEmailError.textContent = message;
+        newEmailError.style.display = 'block';
+        newEmailErrorIcon.style.display = 'flex';
+        newEmailInput.style.borderColor = '#dc3545';
+    }
+    
+    function clearNewEmailError() {
+        newEmailError.textContent = '';
+        newEmailError.style.display = 'none';
+        newEmailErrorIcon.style.display = 'none';
+        newEmailInput.style.borderColor = '#e0e0e0';
+    }
+    
+    function handleCreateAccount() {
+        const email = newEmailInput.value.trim();
+        
+        if (!validateNewEmail()) {
+            return;
+        }
+        
+        setSignupLoadingState(true);
+        
+        // Simulate API call
+        setTimeout(() => {
+            // Mock validation - replace with real API call
+            if (email === 'test@example.com') {
+                showNewEmailError('This email is already registered');
+                setSignupLoadingState(false);
+            } else {
+                // Success
+                handleSignupSuccess(email);
+            }
+        }, 1500);
+    }
+    
+    function setSignupLoadingState(isLoading) {
+        if (isLoading) {
+            signupBtn.disabled = true;
+            signupBtn.classList.add('loading');
+        } else {
+            signupBtn.disabled = false;
+            signupBtn.classList.remove('loading');
+        }
+    }
+    
+    function handleSignupSuccess(email) {
+        setSignupLoadingState(false);
+        
+        // Show success message
+        showNotification('Account creation initiated! Please check your email for verification instructions.', 'success');
+        
+        // Clear form
+        newEmailInput.value = '';
+        clearNewEmailError();
+        
+        // In a real app, you might redirect to a verification page
+        console.log('Signup successful for:', email);
+    }
+}
+
+// Initialize the login functionality when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Login page loaded, initializing...');
+    initializeLogin();
+    initializePasswordToggle();
+    initializeErrorModal();
+    initializeCreateAccount();
+});
+
 // Add CSS for success notification animation
 const style = document.createElement('style');
 style.textContent = `
