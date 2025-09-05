@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/patient.dart';
 
 class PatientProfileModal extends StatefulWidget {
   final Patient patient;
@@ -536,12 +537,3 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
   }
 }
 
-class Patient {
-  final String fullName;
-  final String dob;
-  final String mco;
-  final int gic;
-  final int ra;
-
-  Patient(this.fullName, this.dob, this.mco, this.gic, this.ra);
-}

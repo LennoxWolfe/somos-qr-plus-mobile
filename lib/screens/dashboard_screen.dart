@@ -150,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         context.go('/quality-scorecards');
         break;
       case 'schedule':
-        // TODO: Navigate to schedule page
+        context.go('/schedule');
         break;
       case 'patients':
         context.go('/patients');
@@ -764,7 +764,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     TextButton.icon(
                       onPressed: () {
-                        // Navigate to schedule page
+                        context.go('/schedule');
                       },
                       icon: const Text('📅'),
                       label: const Text(

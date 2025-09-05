@@ -6,6 +6,7 @@ import '../widgets/app_header_widget.dart';
 import '../widgets/app_drawer_widget.dart';
 import '../widgets/provider_dropdown_widget.dart';
 import '../core/constants/providers.dart';
+import '../models/patient.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});

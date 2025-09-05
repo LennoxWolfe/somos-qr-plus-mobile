@@ -9,6 +9,7 @@ import '../../screens/quality_scorecards_screen.dart';
 import '../../screens/dashboard_screen.dart';
 import '../../screens/reports_screen.dart';
 import '../../screens/patients_screen.dart';
+import '../../screens/schedule_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/login',
@@ -58,6 +59,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/patients',
       builder: (context, state) => const PatientsScreen(),
+    ),
+    GoRoute(
+      path: '/schedule',
+      builder: (context, state) => const ScheduleScreen(),
     ),
   ],
 ); 
