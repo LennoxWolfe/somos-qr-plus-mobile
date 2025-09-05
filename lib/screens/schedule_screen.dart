@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../widgets/app_header_widget.dart';
 import '../widgets/app_drawer_widget.dart';
 import '../widgets/provider_dropdown_widget.dart';
+import '../widgets/patient_filter_modal.dart';
 import '../core/constants/providers.dart';
+import '../models/patient.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -18,6 +20,116 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   String _selectedView = 'Day'; // Day, Week, Month
   DateTime _selectedDate = DateTime.now();
   bool _showNewAppointmentModal = false;
+  
+  // Filter functionality
+  String _mcoFilter = '';
+  String _providerFilter = '';
+  String _dobFilter = '';
+  
+  // Schedule filters
+  String _selectedStatusFilter = 'all';
+  String _selectedScheduleProviderFilter = 'all';
+  bool _showScheduleFilters = false;
+  
+  // Patient search functionality
+  final TextEditingController _patientSearchController = TextEditingController();
+  List<Patient> _allPatients = [];
+  List<Patient> _filteredPatients = [];
+  Patient? _selectedPatient;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePatients();
+    _patientSearchController.addListener(_onPatientSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _patientSearchController.dispose();
+    super.dispose();
+  }
+
+  void _initializePatients() {
+    _allPatients = [
+      Patient('James Anderson', '3/15/1965', 'HealthFirst', 85, 92),
+      Patient('Maria Rodriguez', '7/22/1978', 'MetroPlus', 67, 74),
+      Patient('Robert Johnson', '11/30/1982', 'Fidelis Care', 91, 88),
+      Patient('Sarah Williams', '4/12/1995', 'Empire BlueCross BlueShield', 78, 82),
+      Patient('David Chen', '9/3/1973', 'UnitedHealthcare Community Plan', 73, 79),
+      Patient('Jennifer Lopez', '2/28/1988', 'HealthFirst', 89, 95),
+      Patient('Michael Davis', '6/17/1969', 'MetroPlus', 71, 68),
+      Patient('Lisa Thompson', '12/5/1991', 'Fidelis Care', 94, 91),
+      Patient('William Martinez', '8/9/1984', 'Empire BlueCross BlueShield', 76, 83),
+      Patient('Emily Wilson', '1/14/1976', 'UnitedHealthcare Community Plan', 82, 87),
+      Patient('Christopher Lee', '5/20/1993', 'HealthFirst', 88, 93),
+      Patient('Amanda Brown', '10/8/1987', 'MetroPlus', 75, 81),
+      Patient('Daniel Kim', '7/31/1972', 'Fidelis Care', 69, 76),
+      Patient('Jessica Taylor', '3/25/1990', 'Empire BlueCross BlueShield', 86, 89),
+      Patient('Kevin Patel', '11/12/1981', 'UnitedHealthcare Community Plan', 72, 77),
+    ];
+    _filteredPatients = _allPatients;
+  }
+
+  void _onPatientSearchChanged() {
+    _applyPatientFilters();
+  }
+
+  void _selectPatient(Patient patient) {
+    setState(() {
+      _selectedPatient = patient;
+      _patientSearchController.text = patient.fullName;
+      _filteredPatients = [];
+    });
+  }
+
+  void _showFilterModal() {
+    showDialog(
+      context: context,
+      builder: (context) => PatientFilterModal(
+        mcoFilter: _mcoFilter,
+        providerFilter: _providerFilter,
+        dobFilter: _dobFilter,
+        onApply: (mco, provider, dob) {
+          setState(() {
+            _mcoFilter = mco;
+            _providerFilter = provider;
+            _dobFilter = dob;
+          });
+          // Apply filters to patient search
+          _applyPatientFilters();
+        },
+      ),
+    );
+  }
+
+  void _applyPatientFilters() {
+    setState(() {
+      final query = _patientSearchController.text.toLowerCase();
+      List<Patient> filtered = _allPatients;
+      
+      // Apply text search
+      if (query.isNotEmpty) {
+        filtered = filtered.where((patient) {
+          return patient.fullName.toLowerCase().contains(query) ||
+                 patient.mco.toLowerCase().contains(query) ||
+                 patient.dob.contains(query);
+        }).toList();
+      }
+      
+      // Apply MCO filter
+      if (_mcoFilter.isNotEmpty && _mcoFilter != 'All') {
+        filtered = filtered.where((patient) => patient.mco == _mcoFilter).toList();
+      }
+      
+      // Apply DOB filter
+      if (_dobFilter.isNotEmpty) {
+        filtered = filtered.where((patient) => patient.dob == _dobFilter).toList();
+      }
+      
+      _filteredPatients = filtered;
+    });
+  }
 
   // Sample appointments data with specific days
   final List<Map<String, dynamic>> _appointments = [
@@ -165,6 +277,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               
               // Schedule Controls
               _buildScheduleControls(),
+              
+              // Schedule Filters
+              if (_showScheduleFilters) _buildScheduleFilters(),
               
               // Schedule Content
               Expanded(
@@ -378,6 +493,161 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleFilters() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status Filter
+          Row(
+            children: [
+              const Text(
+                'Filter by Status:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildStatusFilterButton('all', 'All', Colors.grey),
+                    _buildStatusFilterButton('pending', 'Pending', Colors.orange),
+                    _buildStatusFilterButton('confirmed', 'Confirmed', Colors.blue),
+                    _buildStatusFilterButton('completed', 'Completed', Colors.green),
+                    _buildStatusFilterButton('no-show', 'No Show', Colors.purple),
+                    _buildStatusFilterButton('cancelled', 'Cancelled', Colors.red),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Provider Filter
+          Row(
+            children: [
+              const Text(
+                'Filter by Provider:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedScheduleProviderFilter,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: [
+                      'all',
+                      'dr-smith',
+                      'dr-johnson', 
+                      'dr-williams',
+                      'dr-brown',
+                      'dr-davis',
+                    ].map((provider) {
+                      String displayName = provider == 'all' ? 'All Providers' : 
+                        provider == 'dr-smith' ? 'Dr. Sarah Smith' :
+                        provider == 'dr-johnson' ? 'Dr. Michael Johnson' :
+                        provider == 'dr-williams' ? 'Dr. Emily Williams' :
+                        provider == 'dr-brown' ? 'Dr. David Brown' :
+                        provider == 'dr-davis' ? 'Dr. Lisa Davis' : provider;
+                      
+                      return DropdownMenuItem(
+                        value: provider,
+                        child: Text(displayName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedScheduleProviderFilter = value!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusFilterButton(String status, String label, Color color) {
+    final isSelected = _selectedStatusFilter == status;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedStatusFilter = status;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1976D2) : Colors.white,
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1976D2) : Colors.grey.shade300,
+          ),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white : color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -945,69 +1215,160 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Patient Selection
-                    const TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Patient Name',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
+                    // Filter Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _showFilterModal,
+                        icon: const Icon(Icons.filter_list, size: 18),
+                        label: const Text('Filter Patients'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade50,
+                          foregroundColor: Colors.blue.shade700,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.blue.shade200),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     
-                    // Date and Time
-                    Row(
+                    // Provider Selection
+                    ProviderDropdownWidget(
+                      selectedProvider: _selectedProvider,
+                      providers: AppProviders.providers,
+                      onProviderChanged: (provider) {
+                        setState(() {
+                          _selectedProvider = provider;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Patient Selection
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              labelText: 'Date',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.calendar_today),
-                            ),
-                            readOnly: true,
-                            onTap: _showDatePicker,
+                        TextField(
+                          controller: _patientSearchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Search Patient',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.person),
+                            suffixIcon: Icon(Icons.search),
                           ),
+                          onTap: () {
+                            if (_selectedPatient != null) {
+                              _patientSearchController.clear();
+                              setState(() {
+                                _selectedPatient = null;
+                                _filteredPatients = _allPatients;
+                              });
+                            }
+                          },
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              labelText: 'Time',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.access_time),
+                        if (_filteredPatients.isNotEmpty && _selectedPatient == null && _patientSearchController.text.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            constraints: const BoxConstraints(maxHeight: 200),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _filteredPatients.length > 5 ? 5 : _filteredPatients.length,
+                              itemBuilder: (context, index) {
+                                final patient = _filteredPatients[index];
+                                return ListTile(
+                                  dense: true,
+                                  title: Text(
+                                    patient.fullName,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  subtitle: Text(
+                                    '${patient.mco} • DOB: ${patient.dob}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  onTap: () => _selectPatient(patient),
+                                );
+                              },
                             ),
                           ),
-                        ),
+                        if (_selectedPatient != null)
+                          Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              border: Border.all(color: Colors.blue.shade200),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.blue.shade600, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _selectedPatient!.fullName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_selectedPatient!.mco} • DOB: ${_selectedPatient!.dob}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 18),
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedPatient = null;
+                                      _patientSearchController.clear();
+                                      _filteredPatients = _allPatients;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     
-                    // Appointment Type
-                    DropdownButtonFormField<String>(
+                    // Appointment Type (Fixed to Walk-In)
+                    TextField(
                       decoration: const InputDecoration(
                         labelText: 'Appointment Type',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.medical_services),
                       ),
-                      items: ['GIC', 'RA', 'GIC + RA', 'Follow-up'].map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                      onChanged: (value) {},
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Notes
-                    const TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Notes (Optional)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.note),
-                      ),
-                      maxLines: 3,
+                      readOnly: true,
+                      controller: TextEditingController(text: 'Walk-In'),
                     ),
                   ],
                 ),
@@ -1112,8 +1473,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   void _showFilters() {
-    // TODO: Implement filters modal
-    _showSuccessMessage('Filters feature coming soon!');
+    setState(() {
+      _showScheduleFilters = !_showScheduleFilters;
+    });
   }
 
   void _handleNavigation(String route) {
