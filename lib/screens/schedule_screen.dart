@@ -331,6 +331,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       ),
       child: Column(
         children: [
+          // Page Title
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'My Schedule',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
           // View Toggle and Date Navigation
           LayoutBuilder(
             builder: (context, constraints) {
@@ -655,14 +669,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget _buildScheduleHeader() {
     return Row(
       children: [
-        Text(
-          'My Schedule',
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF333333),
-          ),
-        ),
         const Spacer(),
         Text(
           '${_appointments.length} appointments',
