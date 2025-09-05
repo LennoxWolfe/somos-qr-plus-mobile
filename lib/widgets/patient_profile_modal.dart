@@ -151,32 +151,37 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Left side
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDemographicItem('Last DOS:', ''),
-              _buildDemographicItem('DOB:', '11/30/1981'),
-              _buildDemographicItem('Phone:', '7187020504'),
-              _buildDemographicItem('Recert Date:', '09/30/2025'),
-              _buildDemographicItem('Next DOS:', ''),
-              _buildDemographicItem('Address:', '8917 55th Ave # 1fl, Elmhurst NY, 11373'),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDemographicItem('Last DOS:', ''),
+                _buildDemographicItem('DOB:', '11/30/1981'),
+                _buildDemographicItem('Phone:', '7187020504'),
+                _buildDemographicItem('Recert Date:', '09/30/2025'),
+                _buildDemographicItem('Next DOS:', ''),
+                _buildDemographicItem('Address:', '8917 55th Ave # 1fl, Elmhurst NY, 11373'),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(width: 20),
           // Right side
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDemographicItem('DOS Status:', ''),
-              _buildDemographicItem('Gender:', 'F'),
-              _buildDemographicItem('Secondary Phone:', ''),
-              _buildDemographicItem('Email:', ''),
-              _buildDemographicItem('Language:', 'SPA'),
-              _buildDemographicItem('MCO:', 'Anthem'),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDemographicItem('DOS Status:', ''),
+                _buildDemographicItem('Gender:', 'F'),
+                _buildDemographicItem('Secondary Phone:', ''),
+                _buildDemographicItem('Email:', ''),
+                _buildDemographicItem('Language:', 'SPA'),
+                _buildDemographicItem('MCO:', 'Anthem'),
+              ],
+            ),
           ),
         ],
       ),
@@ -185,8 +190,8 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
 
   Widget _buildDemographicItem(String label, String value) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
@@ -198,15 +203,15 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
             style: const TextStyle(
               fontWeight: FontWeight.w600,
               color: Color(0xFF666666),
-              fontSize: 14,
+              fontSize: 12,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             value.isEmpty ? '-' : value,
             style: const TextStyle(
               color: Color(0xFF333333),
-              fontSize: 14,
+              fontSize: 13,
             ),
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
