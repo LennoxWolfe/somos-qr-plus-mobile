@@ -73,9 +73,11 @@ class _PatientsScreenState extends State<PatientsScreen> {
   }
 
   void _showPatientProfile(Patient patient) {
-    showDialog(
-      context: context,
-      builder: (context) => PatientProfileModal(patient: patient),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PatientProfileModal(patient: patient),
+      ),
     );
   }
 

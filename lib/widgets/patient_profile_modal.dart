@@ -15,58 +15,23 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final dialogWidth = constraints.maxWidth * 0.95;
-          final dialogHeight = constraints.maxHeight * 0.9;
-          
-          return Container(
-            width: dialogWidth > 800 ? 800 : dialogWidth,
-            height: dialogHeight,
-            constraints: const BoxConstraints(maxWidth: 800, minWidth: 300),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Patient Profile',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Body
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text('Patient Profile'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF333333),
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                         // Provider Selection
                         Container(
                           margin: const EdgeInsets.only(bottom: 16),
@@ -148,16 +113,10 @@ class _PatientProfileModalState extends State<PatientProfileModal> {
                         // Care Gaps Section
                         _buildCareGapsCard(),
                         
-                        // Risk Adjustment Section
-                        _buildRiskAdjustmentCard(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+            // Risk Adjustment Section
+            _buildRiskAdjustmentCard(),
+          ],
+        ),
       ),
     );
   }
